@@ -7,7 +7,6 @@ const scoreElement = document.getElementById("score");
 import { draw as drawMaze, getWalls as getMazeWalls, maze } from './maze.js';
 import { updateGhosts } from './ghosts.js';
 
-// Initialize fireman and gem
 const tilesize = Math.min(canvas.width / maze[0].length, canvas.height / maze.length);
 console.log(tilesize);
  const fireman = {
@@ -24,10 +23,8 @@ const gem = {
     height: tilesize
 };
 
-let score = 0;
 const validPositions = [];
 
-// Load images
 const firemanImage = new Image();
 firemanImage.src = "images/file.png";
 
@@ -46,7 +43,6 @@ firemanImage.onload = () => {
     }
 };
 
-// Dynamically resize the canvas
 function resizeCanvas() {
     const viewportHeight = window.innerHeight;
     const viewportWidth = window.innerWidth;
@@ -62,7 +58,6 @@ function computeValidPositions(){
     //write the function to compute valid positions 
 }
 
-// Movement and collision detection
 let Xspeed = 0;
 let Yspeed = 0;
 let moveLeft = false;
@@ -70,7 +65,7 @@ let moveRight = false;
 let moveUp = false;
 let moveDown = false;
 
-// Event listeners for key presses
+
 window.addEventListener("keydown", function (e) {
     switch (e.key) {
         case "ArrowUp":
@@ -105,7 +100,6 @@ window.addEventListener("keyup", function (e) {
     }
 }, false);
 
-// Check for collision with walls
 function isCollidingWithWall(x, y) {
     const tileX1 = Math.floor(x / tilesize);
     const tileY1 = Math.floor(y / tilesize);
@@ -116,15 +110,15 @@ function isCollidingWithWall(x, y) {
         for (let ty = tileY1; ty <= tileY2; ty++) {
             if (ty >= 0 && ty < maze.length && tx >= 0 && tx < maze[0].length) {
                 if (maze[ty][tx] === 1) {
-                    return 1; // Collision with wall
+                    return 1; 
                 }
             }
         }
     }
-    return 0; // No collision
+    return 0; 
 }
 
-// Update fireman position and check for collisions
+
 function update() {
     window.requestAnimationFrame(update);
     if (moveUp || moveDown) {
@@ -145,27 +139,20 @@ function update() {
         fireman.y = nextY;
     }
 
-    // Keep fireman inside canvas boundaries
+  
     if (fireman.x < 0) fireman.x = 0;
     if (fireman.y < 0) fireman.y = 0;
     if (fireman.x + fireman.width > canvas.width) fireman.x = canvas.width - fireman.width;
     if (fireman.y + fireman.height > canvas.height) fireman.y = canvas.height - fireman.height;
 
-    // Check for collision with the gem
     if (
         fireman.x < gem.x + gem.width &&
         fireman.x + fireman.width > gem.x &&
         fireman.y < gem.y + gem.height &&
         fireman.y + fireman.height > gem.y
     ) {
-        score++;
-        console.log("Score: " + score);
-
-        if (score === 3) {
-            localStorage.setItem('gameScore', score);
-            window.location.href = 'exitpage.html';
-            return; // Stop further processing
-        }
+        
+    
 
         computeValidPositions();
         let randomIndex = Math.floor(Math.random() * validPositions.length);
@@ -177,7 +164,7 @@ function update() {
     render();
 }
 
-// Render function
+
 function render() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawMaze(ctx);
@@ -188,8 +175,8 @@ function render() {
     }
 }
 
-// Start game loop
+
 function gameLoop() {
     update();
-    updateGhosts();  // Update ghosts from ghost.js
+    updateGhosts();  
 }

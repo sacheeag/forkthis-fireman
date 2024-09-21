@@ -3,43 +3,49 @@ const ctx = canvas.getContext("2d");
 
 import { maze } from './maze.js';
 
-import { fireman } from './movement.js'; // Import the fireman object from movement.js
+import { fireman } from './movement.js'; 
 const tilesize = Math.min(canvas.width / maze[0].length, canvas.height / maze.length);
-// Ghost configurations
 const ghostObject = {
     height: tilesize,
     width: 30,
     speed: 2,
-    currentDirection: null,  // Store the current direction
+    currentDirection: null,  
     framesToChangeDirection: 0, 
 };
 
-// Initialize ghosts in the middle of the canvas
+const blinky = Object.create(ghostObject); 
+blinky.x = canvas.width / 2;  
+blinky.y = canvas.height / 2;  
+const blinkyimg = new Image(); 
+blinkyimg.src = './images/ghost2.png';
+
 const pinky = Object.create(ghostObject);
-pinky.x = 32*29; // Center x
-pinky.y = tilesize; // Center y
+pinky.x = 32*29; 
+pinky.y = tilesize; 
 const pinkyimg = new Image();
 pinkyimg.src = './images/ghost1.png';
 
 const inky = Object.create(ghostObject);
-inky.x = 32*10; // Center x
-inky.y = tilesize*2; // Center y
+inky.x = 32*10; 
+inky.y = tilesize*2; 
 const inkyimg = new Image();
 inkyimg.src = './images/ghost3.png';
 
 const clyde = Object.create(ghostObject);
-clyde.x = canvas.width / 2; // Center x
-clyde.y = canvas.height / 2; // Center y
+clyde.x = canvas.width / 2; 
+clyde.y = canvas.height / 2; 
 const clydeimg = new Image();
 clydeimg.src = './images/ghost4.png';
 
-// Function to get a random direction
+
 function getRandomDirection() {
     const directions = ["up", "down", "left", "right"];
     return directions[Math.floor(Math.random() * directions.length)];
 }
 
-// Move ghosts randomly
+function moveBlinky() {
+    const direction = getDirectionTowards(fireman.x, fireman.y, blinky.x, blinky.y);
+   moveGhost(blinky, direction); }
 function moveGhostRandomly(ghost) {
     if (ghost.framesToChangeDirection <= 0) {
         // When the counter reaches zero, choose a new random direction
@@ -49,7 +55,7 @@ function moveGhostRandomly(ghost) {
     moveGhost(ghost, ghost.currentDirection);
 }
 
-// Check if the ghost can move to a given position
+
 function canMoveTo(x, y,ghost) {
     
     const tileX1 = Math.floor(x / 32);
@@ -57,12 +63,11 @@ function canMoveTo(x, y,ghost) {
     const tileX2 = Math.floor((x + ghost.width - 1) / 32);
     const tileY2 = Math.floor((y + ghost.height - 1) / tilesize);
 
-    // Check all tiles that the object covers
     for (let tx = tileX1; tx <= tileX2; tx++) {
         for (let ty = tileY1; ty <= tileY2; ty++) {
             if (ty >= 0 && ty < maze.length && tx >= 0 && tx < maze[0].length) {
                 if (maze[ty][tx] === 1) {
-                    return 1; // Collision with wall
+                    return 1; 
                 }
             }
         }
@@ -71,12 +76,18 @@ function canMoveTo(x, y,ghost) {
 }
 
 
-// Move ghosts in a specified direction
+
 function moveGhost(ghost, direction) {
     let newX = ghost.x;
     let newY = ghost.y;
 
-    // Move the ghost in the specified direction
+    const OffsetX = Math.random() > 0.5 ? ghost.speed * (Math.random() - 0.5) : 0; 
+    const OffsetY = Math.random() > 0.5 ? ghost.speed * (Math.random() - 0.5) : 0;
+
+   
+    newX += OffsetX;
+    newY += OffsetY;
+  
     switch (direction) {
         case "up": newY -= ghost.speed; break;
         case "down": newY += ghost.speed; break;
@@ -84,13 +95,13 @@ function moveGhost(ghost, direction) {
         case "right": newX += ghost.speed; break;
     }
 
-    // Check if the ghost can move to the new position (no walls or other ghosts)
-    if (canMoveTo(newX, newY, ghost)===0 ){//&& !isOccupiedByGhost(newX, newY)) {
+
+    if (canMoveTo(newX, newY, ghost)===0 ){
         ghost.x = newX;
         ghost.y = newY;
     }
 }
-
+let gameOver=false;
 function checkCollision(ghost) {
     return (
         fireman.x < ghost.x + ghost.width &&
@@ -100,19 +111,20 @@ function checkCollision(ghost) {
     );
 }
 
-// Function to check collisions with all ghosts
+
 function checkCollisions() {
     const ghosts = [pinky, inky, clyde];
     
     for (let ghost of ghosts) {
         if (checkCollision(ghost)) {
+            gameOver=true;
             localStorage.setItem('gameScore', score);
             window.location.href = 'exitpage.html';
-            return; // Trigger game over if collision is detected
+            return; 
         }
     }
 }
-// Calculate direction towards a target
+
 function getDirectionTowards(targetX, targetY, currentX, currentY) {
     if (Math.abs(targetX - currentX) > Math.abs(targetY - currentY)) {
         return targetX > currentX ? "right" : "left";
@@ -122,32 +134,35 @@ function getDirectionTowards(targetX, targetY, currentX, currentY) {
 }
 
 
-// Draw ghosts on the canvas
+
 function drawGhosts() {
     ctx.drawImage(pinkyimg, pinky.x, pinky.y, pinky.width, pinky.height);
     ctx.drawImage(inkyimg, inky.x, inky.y, inky.width, inky.height);
     ctx.drawImage(clydeimg, clyde.x, clyde.y, clyde.width, clyde.height);
+    ctx.drawImage(blinkyimg,blinky.x,blinky.y,blinky.width,blinky.height);
 }
 
-// Update ghost positions and draw them
+
 function updateGhosts() {
-    moveGhostRandomly(pinky); // Pinky moves randomly
-    moveGhostRandomly(inky); // Inky moves randomly
-    moveGhostRandomly(clyde); // Clyde moves randomly
-    drawGhosts();  // Draw ghosts on canvas
+    if (gameOver) return;
+    moveGhostRandomly(pinky);
+    moveGhostRandomly(inky); 
+    moveGhostRandomly(clyde); 
+    moveBlinky();
+    drawGhosts(); 
     checkCollisions();
     window.requestAnimationFrame(updateGhosts);
 }
 
-// Ensure all images are loaded before starting the game loop
+
 Promise.all([
     new Promise(resolve => pinkyimg.onload = resolve),
     new Promise(resolve => inkyimg.onload = resolve),
-    new Promise(resolve => clydeimg.onload = resolve)
+    new Promise(resolve => clydeimg.onload = resolve),
+    new Promise(resolve => blinkyimg.onload = resolve),
 ]).then(() => {
     console.log("All ghost images are loaded");
-    window.requestAnimationFrame(updateGhosts);  // Start the ghost update loop
+    window.requestAnimationFrame(updateGhosts);  
 });
 
-// Export functions and objects for use in other modules
 export { updateGhosts };
