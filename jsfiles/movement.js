@@ -56,8 +56,20 @@ function resizeCanvas() {
 }
 resizeCanvas();
 
+/**
+ * Computes an array of valid positions for the gem.
+ * A valid position is a place where the gem can be placed without overlapping with any walls.
+ */
 function computeValidPositions() {
-  //write the function to compute valid positions
+  // Loop through all the rows and columns of the maze
+  for (let row = 0; row < maze.length; row++) {
+    for (let column = 0; column < maze[row].length; column++) {
+      // If the current cell is not a wall, add it to the valid positions array
+      if (maze[row][column] !== 1) {
+        validPositions.push({ x: column * 32, y: row * tilesize });
+      }
+    }
+  }
 }
 
 let Xspeed = 0;
@@ -126,7 +138,6 @@ function isCollidingWithWall(x, y) {
   }
   return 0;
 }
-
 function update() {
   window.requestAnimationFrame(update);
   if (moveUp || moveDown) {
